@@ -17,7 +17,7 @@ int count_lines_columns(FILE* f,int* columns){
             count++;
             done = 1;
         }
-        if (chr == ' ' && !done) nb_columns++;
+        if (chr == ';' && !done) nb_columns++;
         chr = getc(f);
     }
     *columns = nb_columns;
@@ -41,27 +41,21 @@ void print_vect3D(vect3D v){
 
 
 vect3D** read_file(FILE* f,int* rows,int* columns){
-	char *buffer = NULL, *token;
-	size_t num = 0;
     *rows = count_lines_columns(f,columns);
-    printf("Rows : %d, Columns : %d\n",*rows,*columns);
+    rewind(f);
     vect3D** coords = malloc(sizeof(vect3D*) * *rows);
-	for (int i = 0; getline(&buffer, &num, f) != EOF; i++){
-        printf("Buffer : %s\n",token);
-		token = strtok(buffer,"\n");
-        printf("Token : %s \n\n",token);
-        token =  strtok(NULL,'');
-        printf("Token : %s \n\n",token);
-        break;
-        /*
-		for (int j = 0; token; j++){
-			coords[i][j].x = (SCREEN_WIDTH / (*columns + 8)) * (i + 1);
-			coords[i][j].y = (SCREEN_HEIGHT / (*rows + 3)) * (j + 1);
-			coords[i][j].z = atof(token);
-			token = strtok(NULL,' ');
-		}*/
-	}
-    return NULL;
+    for (int i = 0; i < *rows; i++){
+        coords[i] = malloc(sizeof(vect3D) * *columns);
+        int temp;
+        for (int j = 0;j < *columns;j++){
+            fscanf(f,"%d;",&temp);
+            coords[i][j].z = temp;
+            coords[i][j].x = (SCREEN_WIDTH / (*columns + 8)) * (i + 1);
+            coords[i][j].y = (SCREEN_HEIGHT / (*rows + 3)) * (j + 1);
+        }
+        fscanf(f,"\n");
+    }
+    return coords;
 }
 
 void rotate_grid(vect3D** coords,int rows,int columns,int angle){
@@ -152,7 +146,6 @@ int main(int argc, char* argv[]){
     vect3D** coords = read_file(f,&rows,&columns);
     printf("Rows : %d, Columns : %d\n",rows,columns);
     fclose(f);
-    /*
     for (int i = 0; i < rows;i++){
         for (int j = 0; j < columns; j++){
             print_vect3D(coords[i][j]);
