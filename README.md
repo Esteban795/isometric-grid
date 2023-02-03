@@ -19,6 +19,7 @@
 <br />
 <br />
 <br />
+
 ## __What does it do__ ?
 - Basically, you give him a file as a set of z-coordinate points. (x and y are being handled automatically by the program), and it displays the figure that, well, is represented by the z coordinates. It works interestingly, but check out tests examples. They can help you visualize better !
 
