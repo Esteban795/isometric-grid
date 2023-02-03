@@ -23,19 +23,9 @@ int main(int argc, char* argv[]){
     SDL_Renderer* renderer;
     int status = start_SDL(&window,&renderer,SCREEN_WIDTH,SCREEN_HEIGHT,"3D isometric grid viewer, by Esteban795 on Github.");
     if (status == 1) return EXIT_FAILURE;
-    while (true){
-        SDL_Delay(FRAME_DELAY); //Clears up renderer
-        SDL_SetRenderDrawColor(renderer,0,0,0,255);
-        SDL_RenderClear(renderer);
+    main_loop(renderer,coords,rows,columns);
 
-        if (events_handling(coords,rows,columns) == -1) break; // user wants to close the window.
-
-        //Redraw everything
-        SDL_SetRenderDrawColor(renderer,0,255,255,255);
-        draw_grid(renderer,coords,rows,columns);
-        SDL_RenderPresent(renderer);
-    }
-
+    
     //Free up stuff
     for (int i = 0; i < rows;i++){
         free(coords[i]);

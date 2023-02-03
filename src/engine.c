@@ -1,4 +1,6 @@
 #include "../include/engine.h"
+#include <stdbool.h>
+
 
 void rotate_grid(vect3D** coords,int rows,int columns,int angle){
 	float x, y, z;
@@ -77,13 +79,25 @@ void draw_grid(SDL_Renderer* renderer,vect3D** coords,int rows,int columns){
 }
 
 
-int events_handling(vect3D** coords,int rows,int columns){
+int events_handling(camera* cam,vect3D** coords,int rows,int columns){
 	SDL_Event e;
 	while (SDL_PollEvent(&e)){
 		if (e.type == SDL_KEYDOWN){
 			switch (e.key.keysym.sym) {
-			case SDLK_q:
+			case SDLK_ESCAPE:
 				return -1;
+			case SDLK_1:
+				if (cam->current_scale <= 1) break;
+				cam->source.w *= 2;
+				cam->source.h *= 2;
+				cam->current_scale /= 2;
+				break;
+			case SDLK_2:
+				if (cam->current_scale > 32) break;
+				cam->source.w /= 2;
+				cam->source.h /= 2;
+				cam->current_scale *= 2;
+				break;
 			case SDLK_UP:
 				rotate_grid(coords,rows,columns,2);
 				break;
@@ -96,6 +110,22 @@ int events_handling(vect3D** coords,int rows,int columns){
 			case SDLK_RIGHT:
 				rotate_grid(coords,rows,columns,-1);
 				break;
+			case SDLK_s:
+				if (cam->source.y < -2) break;
+				cam->source.y -= 3;
+				break;
+			case SDLK_z:
+				if (cam->source.y > cam->source.h * cam->current_scale) break;
+				cam->source.y += 3;
+				break;
+			case SDLK_d:
+				if (cam->source.x < -2) break;
+				cam->source.x -= 5;
+				break;
+			case SDLK_q:
+				if (cam->source.x > cam->source.w * cam->current_scale) break;
+				cam->source.x += 5;
+				break;
 			default:
 				break;
 			}
@@ -103,3 +133,31 @@ int events_handling(vect3D** coords,int rows,int columns){
 	}
 	return 0;
 }
+
+void main_loop(SDL_Renderer* renderer,vect3D** coords,int rows,int columns){
+	SDL_Texture* texture = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_RGBA8888,SDL_TEXTUREACCESS_TARGET,2 * SCREEN_WIDTH,2 * SCREEN_HEIGHT);
+	camera cam = {.source = {SCREEN_WIDTH/4,SCREEN_HEIGHT/4,SCREEN_WIDTH,SCREEN_HEIGHT}, .current_scale = 2}; //initial zoom at 1 scale, centered camera.
+	SDL_Rect dest = {10,10,SCREEN_WIDTH - 20,SCREEN_HEIGHT- 20};
+	
+	SDL_SetRenderTarget(renderer,texture);
+    SDL_SetRenderDrawColor(renderer,0,0,0,255);
+    SDL_RenderClear(renderer);
+    while (true){
+        SDL_Delay(FRAME_DELAY); //Clears up renderer
+		SDL_SetRenderTarget(renderer,texture);
+        SDL_SetRenderDrawColor(renderer,0,0,0,255);
+        SDL_RenderClear(renderer);
+
+        if (events_handling(&cam,coords,rows,columns) == -1) break; // user wants to close the window.
+
+        //Redraw everything
+        SDL_SetRenderDrawColor(renderer,0,255,255,255);
+        draw_grid(renderer,coords,rows,columns);
+
+
+		SDL_SetRenderTarget(renderer,NULL);
+		SDL_RenderCopy(renderer,texture,&(cam.source),&dest);
+		SDL_RenderPresent(renderer);
+    }
+	SDL_DestroyTexture(texture);
+}	
