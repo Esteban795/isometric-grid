@@ -6,7 +6,9 @@
 
 - You might encounter memory leaks when closing the program. It depends, as it seems, whether you use a Nvidia graphics card with SDL2. I'm not entirely sure what is causing them behind the scenes, but I can't seem to fix it. There are **zero** (at least I hope) memory leaks that are caused by myself in this program. Here is a [link](https://forums.developer.nvidia.com/t/asan-reports-memory-leak-in-libnvidia-glcore-so-515-57/222697/2) that could explain you the situation. It sucks, but I can't really do anything about it on my own.
 <br />
+
 *P.S : you might not see those memory leaks warnings,because I run `clear` command right after the program ends.*
+
 <br />
 <br />
 <br />
@@ -15,7 +17,7 @@
 
 ## __Motivation__ 
 
-- Welp, nothing much to say here . I like C language, and I've wanted to try 3D (or at least a kind of 3D) for a week or two, when I came across this site, [Raising the ground](https://medium.com/@fredhii/rising-the-ground-64957937513b). I found that the idea was interesting and wanted to do it myself. I followed the ideas and eventually managed to scrap the files he used to simulate them, and created some on my own. I'm still working on a generator for such figure, but it's harder than expected. Much thanks to this website and his author.
+- Welp, nothing much to say here . I like C language, and I've wanted to try 3D (or at least a kind of 3D) for a week or two, when I came across this site, [Raising the ground](https://medium.com/@fredhii/rising-the-ground-64957937513b). I found that the idea was interesting and wanted to do it myself. I followed the ideas and eventually managed to scrap the files they used to simulate them, and created some on my own. I'm still working on a generator for such figure, but it's harder than expected. Much thanks to this website and his author.
 <br />
 <br />
 <br />
@@ -52,7 +54,7 @@ On MacOS, I have no clue if it works since I couldn't test it.
 git clone https://github.com/Esteban795/isometric-grid.git
 ```
 
-- After that, head to the directory you cloned it, and type 
+- After that, head to the directory you cloned it in, and type 
 ```ps
 make build
 ``` 
@@ -66,6 +68,21 @@ make run PATH="./tests/test2.txt"
 ```
 It should render this : 
 ![example2](./img/test2.png)
+
+
+## How to use it ?
+
+| Keys        | What they do                  |
+|-------------|-------------------------------|
+| W           | Moves the figure upwards      |
+| A           | Moves the figure to the left  |
+| S           | Moves the figure downwards    |
+| D           | Moves the figure to the right |
+| UP_ARROW    | Top rotation                  |
+| DOWN_ARROW  | Down Rotation                 |
+| LEFT_ARROW  | Surprinsigly, left rotation   |
+| RIGHT_ARROW | Right rotation                |
+| ESC         | Quit the program              |
 
 <br />
 <br />
