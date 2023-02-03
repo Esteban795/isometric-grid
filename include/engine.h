@@ -8,8 +8,7 @@
 
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 600
-#define FRAME_DELAY 16
-
+#define FRAME_DELAY 7
 
 
 struct Camera {
