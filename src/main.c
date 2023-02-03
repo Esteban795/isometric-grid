@@ -6,10 +6,12 @@
 
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 600
+#define FRAME_DELAY 16
+
 
 int count_lines_columns(FILE* f,int* columns){
     int count = 1;
-    int nb_columns = 0;
+    int nb_columns = 1;
     char chr = getc(f);
     int done = 0;
     while (chr != EOF){
@@ -17,7 +19,7 @@ int count_lines_columns(FILE* f,int* columns){
             count++;
             done = 1;
         }
-        if (chr == ';' && !done) nb_columns++;
+        if (chr == ' ' && !done) nb_columns++;
         chr = getc(f);
     }
     *columns = nb_columns;
@@ -27,16 +29,16 @@ int count_lines_columns(FILE* f,int* columns){
 
 
 struct vect3D {
-    int x;
-    int y;
-    int z;
+    float x;
+    float y;
+    float z;
 };
 
 typedef struct vect3D vect3D;
 
 
 void print_vect3D(vect3D v){
-    printf("X : %d, Y : %d, Z : %d\n",v.x,v.y,v.z);
+    printf("X : %f, Y : %f, Z : %f\n",v.x,v.y,v.z);
 }
 
 
@@ -46,9 +48,9 @@ vect3D** read_file(FILE* f,int* rows,int* columns){
     vect3D** coords = malloc(sizeof(vect3D*) * *rows);
     for (int i = 0; i < *rows; i++){
         coords[i] = malloc(sizeof(vect3D) * *columns);
-        int temp;
+        float temp;
         for (int j = 0;j < *columns;j++){
-            fscanf(f,"%d;",&temp);
+            fscanf(f,"%f ",&temp);
             coords[i][j].z = temp;
             coords[i][j].x = (SCREEN_WIDTH / (*columns + 8)) * (i + 1);
             coords[i][j].y = (SCREEN_HEIGHT / (*rows + 3)) * (j + 1);
@@ -58,74 +60,91 @@ vect3D** read_file(FILE* f,int* rows,int* columns){
     return coords;
 }
 
-void rotate_grid(vect3D** coords,int rows,int columns,int angle){
-    float x,y,z,a,Rx,Ry,Rz;
-    int axis = 0;
-    switch (angle)
-    {
-    case 2:
+void rotate_grid(vect3D** coords,int rows,int columns,int Angle){
+	int i, j;
+	float x, y, z;
+	float a, Rx, Ry, Rz;
+	int axis = 0;
+
+	if (Angle == 2){
         axis = 1;
-        a = 1 * M_PI /180;
-        break;
-    case -2:
+        a = 1 * M_PI / 180;
+    } else if (Angle == -2){
         axis = 1;
-        a = -1 * M_PI /180;
-        break;
-    default:
-        break;
+        a = -1 * M_PI / 180;
+    } else {
+        a = Angle * M_PI / 180;
     }
-    for (int i = 0; i < rows;i++){
-        for (int j = 0; j < columns;j++){
-            if (axis == 0){ //we're moving right or left
-                x = coords[i][j].x;
-                y = coords[i][j].y;
-                Rx = x * cos(a) - y * sin(a);
-                Ry = x * sin(a) + y * cos(a);
-                coords[i][j].x = Rx;
-                coords[i][j].y = Ry;
-            } else {
-                z = coords[i][j].z;
-                y = coords[i][j].y;
-                Ry = y * cos(a) - z * sin(a);
-                Rz = y * sin(a) + z * cos(a);
-                coords[i][j].z = Rz;
-                coords[i][j].y = Ry;
-            }
-        }
-    }
+		
+	float Cx = SCREEN_WIDTH/4.0;
+	float Cy = SCREEN_HEIGHT/3.0;
+
+	for (i = 0; i < rows; i++)
+		for (j = 0; j < columns; j++)
+		{
+			if (axis == 0) /* Move left or right */
+			{
+				x = coords[i][j].x;
+				y = coords[i][j].y;
+				Rx = (x - Cx) * cos(a) - (y - Cy) * sin(a) + Cx;
+				Ry = (x - Cx) * sin(a) + (y - Cy) * cos(a) + Cy;
+				coords[i][j].x = Rx;
+				coords[i][j].y = Ry;
+			}
+			else /* Move up or down */
+			{
+				y = coords[i][j].y;
+				z = coords[i][j].z;
+				Ry = y * cos(a) - z * sin(a);
+				Rz = y * sin(a) + z * cos(a);
+				coords[i][j].y = Ry;
+				coords[i][j].z = Rz;
+			}
+		}
 }
 
 
 void draw_grid(SDL_Renderer* renderer,vect3D** coords,int rows,int columns){
-    float x_incl = 0.8, y_incl = 0.7;
-    int x,y,z;
-    float xx,yy,XX,YY;
+	int i, j;
+	float x, y, z;
+	float xx, yy, XX, YY;
+	float x_incl = 0.8, y_incl = 0.7;
+	float Cx, Cy;
 
-    for (int i = 0; i < rows; i++){
-        for (int j = 0; j < columns;j++){
-            x = coords[i][j].x;
-            y = coords[i][j].y;
-            z = coords[i][j].z;
-            xx = x_incl * (x - y);
-            yy = (1 - y_incl) * (x + y) - z;
-            if (i < rows - 1){
-                x = coords[i + 1][j].x;
-                y = coords[i + 1][j].y;
-                z = coords[i + 1][j].z;
-                XX = x_incl * (x - y);
-                YY = (1 - y_incl) * (x + y) - z;
-                SDL_RenderDrawLine(renderer,xx,yy,XX,YY);
-            }
-            if (j < columns - 1){
+	Cx = SCREEN_WIDTH / 2.2;
+	Cy = SCREEN_HEIGHT / 3.2;
+	for (i = 0; i < rows; i++)
+	{
+		for (j = 0; j < columns; j++)
+		{
+			x = coords[i][j].x;
+			y = coords[i][j].y;
+			z = coords[i][j].z;
+			xx = (x_incl * (x - y)) + Cx;
+			yy = ((1 - y_incl) * (x + y) - z) + Cy;
+
+			if (i < rows- 1)
+			{
+				/* Take out next X coordinate */
+				x = coords[i + 1][j].x;
+				y = coords[i + 1][j].y;
+				z = coords[i + 1][j].z;
+				XX = (x_incl * (x - y)) + Cx;
+				YY = (1 - y_incl) * (x + y) - z + Cy;
+				SDL_RenderDrawLine(renderer, xx, yy, XX, YY);
+			}
+			if (j < columns - 1)
+			{
+				/* Take out next Y coordinate */
 				x = coords[i][j + 1].x;
 				y = coords[i][j + 1].y;
 				z = coords[i][j + 1].z;
-                XX = x_incl * (x - y);
-                YY = (1 - y_incl) * (x + y) - z;
-                SDL_RenderDrawLine(renderer,xx,yy,XX,YY);
-            }
-        }
-    }
+				YY = ((1 - y_incl) * (x + y) - z) + Cy;
+				XX = (x_incl * (x - y)) + Cx;
+				SDL_RenderDrawLine(renderer, xx, yy, XX, YY);
+			}
+		}
+	}
 }
 
 int start_SDL(SDL_Window** window,SDL_Renderer** renderer,int width,int height, const char* title){
@@ -137,12 +156,11 @@ int start_SDL(SDL_Window** window,SDL_Renderer** renderer,int width,int height, 
     return 0;
 }
 
-
 int main(int argc, char* argv[]){
     if (argc != 2) return EXIT_FAILURE;
     int rows;
     int columns;
-    FILE* f = fopen("test.txt","r");
+    FILE* f = fopen("test3.txt","r");
     vect3D** coords = read_file(f,&rows,&columns);
     printf("Rows : %d, Columns : %d\n",rows,columns);
     fclose(f);
@@ -151,7 +169,6 @@ int main(int argc, char* argv[]){
             print_vect3D(coords[i][j]);
         }
     }
-    /*
     SDL_Window* window;
     SDL_Renderer* renderer;
     int status = start_SDL(&window,&renderer,SCREEN_WIDTH,SCREEN_HEIGHT,"test");
@@ -159,7 +176,7 @@ int main(int argc, char* argv[]){
     int running = 1;
     SDL_Event e;
     while (running){
-        SDL_SetRenderDrawColor(renderer,255,255,255,255);
+        SDL_SetRenderDrawColor(renderer,0,0,0,255);
         SDL_RenderClear(renderer);
 
         while (SDL_PollEvent(&e)){
@@ -169,16 +186,16 @@ int main(int argc, char* argv[]){
                 case SDLK_q:
                     running = 0;
                     break;
-                case SDLK_w:
+                case SDLK_UP:
                     rotate_grid(coords,rows,columns,2);
                     break;
-                case SDLK_a:
+                case SDLK_LEFT:
                     rotate_grid(coords,rows,columns,1);
                     break;
-                case SDLK_s:
+                case SDLK_DOWN:
                     rotate_grid(coords,rows,columns,-2);
                     break;
-                case SDLK_d:
+                case SDLK_RIGHT:
                     rotate_grid(coords,rows,columns,-1);
                     break;
                 default:
@@ -186,18 +203,17 @@ int main(int argc, char* argv[]){
                 }
             }
         }
-        SDL_SetRenderDrawColor(renderer,0,0,0,255);
+        SDL_SetRenderDrawColor(renderer,0,255,255,255);
         draw_grid(renderer,coords,rows,columns);
         SDL_RenderPresent(renderer);
+        SDL_Delay(FRAME_DELAY);
     }
-    */
-   if (coords != NULL){
-   for (int i = 0; i < rows;i++){
-    free(coords[i]);
-   }
-   free(coords);
-   }
-
+    for (int i = 0; i < rows;i++){
+        free(coords[i]);
+    }
+    free(coords);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
     return 0;
 }
 
