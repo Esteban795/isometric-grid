@@ -35,5 +35,3 @@ int main(int argc, char* argv[]){
     SDL_DestroyWindow(window);
     return 0;
 }
-
-//gcc main.c -o main -W -Wall -Wextra -Wvla -fsanitize=address $(sdl2-config --cflags) -lSDL2 -lm

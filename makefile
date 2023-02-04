@@ -7,7 +7,7 @@ CFLAGS = -W -Wall -Wextra -Wvla -fsanitize=address $(sdl2-config --cflags) -lSDL
 DEPENDENCIES = $(SRCDIR)/engine.c $(SRCDIR)/file_operations.c $(SRCDIR)/vect3D.c
 
 build:
-	gcc $(SRCDIR)/isometric_grid_viewer.c -o ./isometric_grid_viewer $(CFLAGS) $(DEPENDENCIES)
+	gcc $(SRCDIR)/isometric_grid_viewer.c -o ./isometric_grid_viewer $(DEPENDENCIES) $(CFLAGS) 
 
 run: ./isometric_grid_viewer
 	./isometric_grid_viewer $(PATH);clear
